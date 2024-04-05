@@ -100,7 +100,44 @@ class ScalerType(enum.Enum):
 
 
 class TimeSeriesPreprocessor(FeatureExtractionMixin):
-    """A preprocessor for supporting time series modeling tasks"""
+    """A preprocessor for supporting time series modeling tasks
+
+    Args:
+        id_columns (List[str], optional): Columns indicating groups of the time series. Defaults to [].
+        timestamp_column (Optional[str], optional): Timestamp column in the data.. Defaults to None.
+        target_columns (List[str], optional): Columns to forecast in the data. Defaults to [].
+        observable_columns (List[str], optional): List of columns for which we know the past and future values.
+            Defaults to [].
+        control_columns (List[str], optional): List of columns for which we know the past and future values, and can
+            also change these values. Currently treated the same as observable columns. Defaults to [].
+        conditional_columns (List[str], optional): List of columns for which we know only the past values. Defaults to
+            [].
+        static_categorical_columns (List[str], optional): List of columns which contain static categorical values.
+            These values do not change with time. Defaults to [].
+        context_length (int, optional): The length of the context windows. Defaults to 64.
+        prediction_length (Optional[int], optional): The length of the prediction window or forecasting horizon.
+            Defaults to None.
+        scaling (bool, optional): If True enables scaling of the underlying time series. Individual scaling factors
+            are learned by calling the train method, and is done in a groupwise fashion on groups determined by
+            `scaling_id_columns`. Defaults to False.
+        scaler_type (ScalerType, optional): Type of scaler, see `ScalerType` for supported types. Defaults to
+            ScalerType.STANDARD.value.
+        scaling_id_columns (Optional[List[str]], optional): Columns which define groups for scaling, if None,
+            id_columns will be used. Defaults to None.
+        encode_categorical (bool, optional): If True, any static categorical columns will be encoded with an ordinal
+            enconder. Defaults to True.
+        time_series_task (str, optional): For future use, the task that the preprocessing is being performed for.
+            Defaults to TimeSeriesTask.FORECASTING.value.
+        frequency_mapping (Dict[str, int], optional): A mapping which maps strings (frequency names) to integers.
+            Defaults to DEFAULT_FREQUENCY_MAPPING.
+        freq (Optional[Union[int, str]], optional): A string representing the frequency of the underlying time series.
+            Defaults to None.
+
+
+    Raises:
+        ValueError: Raised if the provided `id_columns` is not a list.
+        ValueError: Raised if the provided `timestamp_column` is a list.
+    """
 
     def __init__(
         self,

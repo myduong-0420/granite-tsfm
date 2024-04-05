@@ -21,12 +21,15 @@ class BaseDFDataset(torch.utils.data.Dataset):
     All subclasses should overwrite :meth: `__get_item__`
 
     Args:
-        data_df (DataFrame, required): input data
-        datetime_col (str, optional): datetime column in the data_df. Defaults to None
-        x_cols (list, optional): list of columns of X. If x_cols is an empty list, all the columns in the data_df is taken, except the datatime_col. Defaults to an empty list.
-        y_cols (list, required): list of columns of y. Defaults to an empty list.
-        seq_len (int, required): the sequence length. Defaults to 1
-        pred_len (int, required): forecasting horizon. Defaults to 0.
+        data_df (DataFrame, required): input data.
+        id_columns: (List[str], optional): Columns indicating groups of time series. Defaults to [].
+        timestamp_column (str, optional): Timestamp column in the data. Defaults to None.
+        group_id (Union[List[int], List[str]], optional): ID for this group. Defaults to None.
+        x_cols (List, optional): list of columns of X. If x_cols is an empty list, all the columns in the data_df is taken, except the datatime_col. Defaults to an empty list.
+        y_cols (List, required): list of columns of y. Defaults to [].
+        drop_cols (List): List of columns to drop. Defaults to [].
+        context_length (int, optional): The length of the context windows. Defaults to 1.
+        prediction_length (int, optional): The length of the prediction window. Defaults to 1.
         zero_padding (bool, optional): pad zero if the data_df is shorter than seq_len+pred_len
     """
 
@@ -130,18 +133,17 @@ class BaseDFDataset(torch.utils.data.Dataset):
 
 class BaseConcatDFDataset(torch.utils.data.ConcatDataset):
     """
-    An abtract class representing a :class: `BaseConcatDFDataset`.
+    An abtract class representing a :class: `BaseConcatDFDataset`. This uses the torch ConcatDataset to concatenate datasets into one larger dataset.
 
     Args:
-        data_df (DataFrame, required): input data
-        datetime_col (str, optional): datetime column in the data_df. Defaults to None
-        x_cols (list, optional): list of columns of X. If x_cols is an empty list, all the columns in the data_df is taken, except the datatime_col. Defaults to an empty list.
-        y_cols (list, required): list of columns of y. Defaults to an empty list.
-        group_ids (list, optional): list of group_ids to split the data_df to different groups. If group_ids is defined, it will triggle the groupby method in DataFrame. If empty, entire data frame is treated as one group.
-        seq_len (int, required): the sequence length. Defaults to 1
-        num_workers (int, optional): the number if workers used for creating a list of dataset from group_ids. Defaults to 1.
-        pred_len (int, required): forecasting horizon. Defaults to 0.
-        cls (class, required): dataset class
+        data_df (DataFrame, required): input data.
+        id_columns: (List[str], optional): Columns indicating groups of time series. Defaults to [].
+        timestamp_column (str, optional): Timestamp column in the data. Defaults to None.
+        target_columns (List[str], optional): Columns to forecast in the data. Defaults to [].
+        context_length (int, optional): The length of the context windows. Defaults to 1.
+        prediction_length (int, optional): The length of the prediction window. Defaults to 1.
+        num_workers (int, optional): The number if workers used for creating a list of dataset. Defaults to 1.
+        cls (class, required): Underlying dataset class
     """
 
     def __init__(
@@ -246,14 +248,13 @@ class PretrainDFDataset(BaseConcatDFDataset):
     """
     A :class: `PretrainDFDataset` is used for pretraining.
 
-    To be updated
     Args:
-        data_df (DataFrame, required): input data
-        datetime_col (str, optional): datetime column in the data_df. Defaults to None
-        x_cols (list, optional): list of columns of X. If x_cols is an empty list, all the columns in the data_df is taken, except the datatime_col. Defaults to an empty list.
-        group_ids (list, optional): list of group_ids to split the data_df to different groups. If group_ids is defined, it will triggle the groupby method in DataFrame. If empty, entire data frame is treated as one group.
-        seq_len (int, required): the sequence length. Defaults to 1
-        num_workers (int, optional): the number if workers used for creating a list of dataset from group_ids. Defaults to 1.
+        data (DataFrame, required): input data.
+        id_columns: (List[str], optional): Columns indicating groups of time series. Defaults to [].
+        timestamp_column (str, optional): Timestamp column in the data. Defaults to None.
+        target_columns (List[str], optional): Columns to forecast in the data. Defaults to [].
+        context_length (int, optional): The length of the context windows. Defaults to 1.
+        num_workers (int, optional): The number if workers used for creating a list of dataset. Defaults to 1.
     """
 
     def __init__(
@@ -322,13 +323,18 @@ class ForecastDFDataset(BaseConcatDFDataset):
     A :class: `ForecastDFDataset` used for forecasting.
 
     Args:
-        data_df (DataFrame, required): input data
-        datetime_col (str, optional): datetime column in the data_df. Defaults to None
-        x_cols (list, optional): list of columns of X. If x_cols is an empty list, all the columns in the data_df is taken, except the datatime_col. Defaults to an empty list.
-        group_ids (list, optional): list of group_ids to split the data_df to different groups. If group_ids is defined, it will triggle the groupby method in DataFrame. If empty, entire data frame is treated as one group.
-        seq_len (int, required): the sequence length. Defaults to 1
-        num_workers (int, optional): the number if workers used for creating a list of dataset from group_ids. Defaults to 1.
-        pred_len (int, required): forecasting horizon. Defaults to 0.
+        data (DataFrame, required): input data.
+        id_columns: (List[str], optional): Columns indicating groups of time series. Defaults to [].
+        timestamp_column (str, optional): Timestamp column in the data. Defaults to None.
+        target_columns (List[str], optional): Columns to forecast in the data. Defaults to [].
+        observable_columns (List[str], optional): List of columns for which we know the past and future values. Defaults to [].
+        control_columns (List[str], optional): List of columns for which we know the past and future values, and can also change these values. Currently treated the same as observable columns. Defaults to [].
+        conditional_columns (List[str], optional): List of columns for which we know only the past values. Defaults to [].
+        static_categorical_columns (List[str], optional): List of columns which contain static categorical values. These values do not change with time. Defaults to [].
+        context_length (int, optional): The length of the context windows. Defaults to 1.
+        num_workers (int, optional): The number if workers used for creating a list of dataset. Defaults to 1.
+        prediction_length (int, optional): The length of the prediction window or forecasting horizon. Defaults to 1.
+        frequency_token (int, optional): A token (integer) that indicates the frequency of the data. Defaults to None.
     """
 
     def __init__(
@@ -473,13 +479,14 @@ class RegressionDFDataset(BaseConcatDFDataset):
     A :class: `RegressionDFDataset` used for regression.
 
     Args:
-        data_df (DataFrame, required): input data
-        datetime_col (str, optional): datetime column in the data_df. Defaults to None
-        input_columns (list, optional): list of columns of X. If x_cols is an empty list, all the columns in the data_df is taken, except the datatime_col. Defaults to an empty list.
-        output_columns (list, required): list of columns of y. Defaults to an empty list.
-        id_columns (list, optional): List of columns that specify ids in the dataset. list of group_ids to split the data_df to different groups. If group_ids is defined, it will triggle the groupby method in DataFrame. If empty, entire data frame is treated as one group.
-        context_length (int, required): the sequence length. Defaults to 1
-        num_workers (int, optional): the number if workers used for creating a list of dataset from group_ids. Defaults to 1.
+        data (DataFrame, required): input data.
+        id_columns: (List[str], optional): Columns indicating groups of time series. Defaults to [].
+        timestamp_column (str, optional): Timestamp column in the data. Defaults to None.
+        input_columns (List[str], optional): Columns which serve as input to the regression. Defaults to [].
+        target_columns (List[str], optional): List of columns specifying the targets of the regression. Defaults to [].
+        static_categorical_columns (List[str], optional): List of columns which contain static categorical values. These values do not change with time. Defaults to [].
+        context_length (int, optional): The length of the context windows. Defaults to 1.
+        num_workers (int, optional): The number if workers used for creating a list of dataset. Defaults to 1.
     """
 
     def __init__(
