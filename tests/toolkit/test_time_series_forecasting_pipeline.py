@@ -18,7 +18,7 @@ def test_forecasting_pipeline_forecasts():
     target_columns = ["HUFL", "HULL", "MUFL", "MULL", "LUFL", "LULL", "OT"]
     prediction_length = 96
 
-    model_path = "ibm/patchtst-etth1-forecasting"
+    model_path = "ibm-granite/granite-timeseries-patchtst"
     model = PatchTSTForPrediction.from_pretrained(model_path)
     context_length = model.config.context_length
 
@@ -116,7 +116,7 @@ def test_forecasting_pipeline_forecasts_with_preprocessor():
     target_columns = ["HUFL", "HULL", "MUFL", "MULL", "LUFL", "LULL", "OT"]
     prediction_length = 96
 
-    model_path = "ibm/patchtst-etth1-forecasting"
+    model_path = "ibm-granite/granite-timeseries-patchtst"
     model = PatchTSTForPrediction.from_pretrained(model_path)
     context_length = model.config.context_length
 
