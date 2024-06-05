@@ -802,6 +802,7 @@ def get_datasets(
     split_config: Dict[str, Union[List[Union[int, float]], float]] = {"train": 0.7, "test": 0.2},
     fewshot_fraction: Optional[float] = None,
     fewshot_location: str = FractionLocation.LAST.value,
+    use_frequency_token: bool = False,
 ) -> Tuple[Any]:
     """Creates the preprocessed pytorch datasets needed for training and evaluation
     using the HuggingFace trainer
@@ -829,6 +830,7 @@ def get_datasets(
         fewshot_location (str): Determines where the fewshot data is chosen. Valid options are "first" and "last"
             as described in the enum FewshotLocation. Default is to choose the fewshot data at the end
             of the training dataset (i.e., "last").
+        use_frequency_token (bool): If True, datasets are created that include the frequency token. Defaults to False.
 
     Returns:
         Tuple of pytorch datasets, including: train, validation, test.
@@ -878,6 +880,8 @@ def get_datasets(
     params = column_specifiers
     params["context_length"] = ts_preprocessor.context_length
     params["prediction_length"] = ts_preprocessor.prediction_length
+    if use_frequency_token:
+        params["frequency_token"] = ts_preprocessor.get_frequency_token()
 
     # get torch datasets
     train_valid_test = [train_data, valid_data, test_data]
